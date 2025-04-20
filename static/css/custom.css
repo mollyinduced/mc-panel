@@ -1,0 +1,76 @@
+/* Custom styles for Minecraft Control Panel */
+
+/* Scrollable log container */
+#server-logs {
+    height: 500px;
+    overflow-y: auto;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    font-family: monospace;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Log line styles */
+.log-line {
+    padding: 2px 0;
+    white-space: pre-wrap;
+}
+
+/* Server card */
+.server-card {
+    transition: transform 0.2s;
+}
+
+.server-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Command input */
+.command-input-container {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.command-input-container input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* Player list */
+.player-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Toast styles */
+.toast {
+    min-width: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .server-actions {
+        flex-direction: column;
+    }
+    
+    .server-actions .btn {
+        margin-bottom: 5px;
+    }
+}
+
+/* Minecraft-themed colors (subtle) */
+.bg-minecraft-green {
+    background-color: rgba(80, 175, 75, 0.8);
+}
+
+.bg-minecraft-dirt {
+    background-color: rgba(120, 85, 55, 0.6);
+}
+
+/* Remove focus outline from buttons while keeping accessibility */
+.btn:focus {
+    box-shadow: none;
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}

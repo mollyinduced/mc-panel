@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-people text-primary me-2"></i>
+            Player Management: {{ server.name }}
+        </h1>
+        <p class="lead text-muted">Manage players, whitelist and bans</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ server.name }} Players</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row player-management">
+    <!-- Online Players -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success bg-opacity-25">
+                <h5 class="mb-0">
+                    <i class="bi bi-circle-fill text-success me-2"></i>
+                    Online Players
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="player-list">
+                    {% if online_players %}
+                        <div class="list-group">
+                            {% for player in online_players %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ player }}</span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                type="button" data-bs-toggle="dropdown" 
+                                                aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <button class="dropdown-item player-action" 
+                                                      data-server="{{ server.name }}" 
+                                                      data-player="{{ player }}" 
+                                                      data-action="kick">
+                                                    <i class="bi bi-box-arrow-right me-2"></i>Kick
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item player-action" 
+                                                      data-server="{{ server.name }}" 
+                                                      data-player="{{ player }}" 
+                                                      data-action="ban">
+                                                    <i class="bi bi-slash-circle me-2"></i>Ban
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item player-action" 
+                                                      data-server="{{ server.name }}" 
+                                                      data-player="{{ player }}" 
+                                                      data-action="op">
+                                                    <i class="bi bi-star me-2"></i>Make OP
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item player-action" 
+                                                      data-server="{{ server.name }}" 
+                                                      data-player="{{ player }}" 
+                                                      data-action="deop">
+                                                    <i class="bi bi-star-half me-2"></i>Remove OP
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-people-fill fs-1"></i>
+                            <p class="mt-2">No players online</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <form id="add-player-form" class="d-flex">
+                    <input type="text" id="player-name-online" class="form-control me-2" placeholder="Player name...">
+                    <button type="button" class="btn btn-outline-primary" id="refresh-online-players"
+                           data-server="{{ server.name }}">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Whitelist -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info bg-opacity-25">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield-check text-info me-2"></i>
+                    Whitelist
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="player-list">
+                    {% if whitelist %}
+                        <div class="list-group">
+                            {% for player in whitelist %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ player.name }}</span>
+                                    <button class="btn btn-sm btn-outline-danger player-action" 
+                                          data-server="{{ server.name }}" 
+                                          data-player="{{ player.name }}" 
+                                          data-action="whitelist-remove">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-shield fs-1"></i>
+                            <p class="mt-2">Whitelist is empty or not enabled</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <form id="add-whitelist-form" class="d-flex">
+                    <input type="text" id="player-name-whitelist" class="form-control me-2" placeholder="Player name...">
+                    <button type="button" class="btn btn-outline-primary player-action" 
+                         data-server="{{ server.name }}" 
+                         data-action="whitelist-add"
+                         data-player-input="player-name-whitelist">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Banned Players -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger bg-opacity-25">
+                <h5 class="mb-0">
+                    <i class="bi bi-slash-circle text-danger me-2"></i>
+                    Banned Players
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="player-list">
+                    {% if banned_players %}
+                        <div class="list-group">
+                            {% for player in banned_players %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span>{{ player.name }}</span>
+                                        {% if player.reason %}
+                                            <small class="d-block text-muted">{{ player.reason }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-success player-action" 
+                                          data-server="{{ server.name }}" 
+                                          data-player="{{ player.name }}" 
+                                          data-action="pardon">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-slash-circle fs-1"></i>
+                            <p class="mt-2">No banned players</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <form id="add-ban-form" class="d-flex">
+                    <input type="text" id="player-name-ban" class="form-control me-2" placeholder="Player name...">
+                    <button type="button" class="btn btn-outline-danger player-action" 
+                         data-server="{{ server.name }}" 
+                         data-action="ban"
+                         data-player-input="player-name-ban">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-terminal me-2"></i>
+                    Execute Command
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="command-form" data-server="{{ server.name }}">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">/</span>
+                        <input type="text" id="command-input" class="form-control" placeholder="Enter a command...">
+                        <button class="btn btn-primary" type="submit">Execute</button>
+                    </div>
+                    <div class="form-text">
+                        Example commands: <code>whitelist on</code>, <code>whitelist off</code>, <code>whitelist reload</code>, <code>op username</code>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> Back to Dashboard
+            </a>
+            <a href="/server/logs/{{ server.name }}" class="btn btn-primary">
+                <i class="bi bi-file-text"></i> View Server Logs
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up player action buttons that use input fields
+    document.querySelectorAll('.player-action[data-player-input]').forEach(button => {
+        button.addEventListener('click', function() {
+            const serverName = this.getAttribute('data-server');
+            const action = this.getAttribute('data-action');
+            const inputId = this.getAttribute('data-player-input');
+            const playerInput = document.getElementById(inputId);
+            
+            if (playerInput && playerInput.value) {
+                // Execute the command with the player name from the input
+                executeCommand(serverName, `${action.replace('-', ' ')} ${playerInput.value}`);
+                
+                // Clear the input
+                playerInput.value = '';
+            }
+        });
+    });
+    
+    // Refresh online players button
+    const refreshOnlineBtn = document.getElementById('refresh-online-players');
+    if (refreshOnlineBtn) {
+        refreshOnlineBtn.addEventListener('click', function() {
+            window.location.reload();
+        });
+    }
+});
+</script>
+{% endblock %}

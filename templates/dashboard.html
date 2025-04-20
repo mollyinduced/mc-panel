@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-hdd-stack text-primary me-2"></i>
+            Server Dashboard
+        </h1>
+        <p class="lead text-muted">Manage your Minecraft servers</p>
+    </div>
+    <div class="col-md-4 text-end align-self-center">
+        <div class="form-check form-switch d-inline-block">
+            <input class="form-check-input" type="checkbox" role="switch" id="global_use_api" {% if use_api %}checked{% endif %}>
+            <label class="form-check-label" for="global_use_api">Use API by default</label>
+        </div>
+        <a href="/server/add" class="btn btn-primary ms-3">
+            <i class="bi bi-plus-circle me-2"></i>Add Server
+        </a>
+    </div>
+</div>
+
+{% if not servers %}
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">No servers configured</h4>
+        <p>You don't have any Minecraft servers configured yet. Click the button below to add your first server.</p>
+        <hr>
+        <p class="mb-0">
+            <a href="/server/add" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Server
+            </a>
+        </p>
+    </div>
+{% else %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for server in servers %}
+            <div class="col">
+                <div class="card server-card h-100 border-secondary">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ server.name }}</h5>
+                        <span class="badge server-status" data-server="{{ server.name }}">
+                            {% if statuses[server.name] == "running" %}
+                                <span class="bg-success">Online</span>
+                            {% else %}
+                                <span class="bg-danger">Offline</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Path:</strong> {{ server.path }}</p>
+                        <p><strong>JAR:</strong> {{ server.jar_file }}</p>
+                        <p><strong>Memory:</strong> {{ server.min_memory }} - {{ server.max_memory }}</p>
+                        <p><strong>Port:</strong> {{ server.port }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex flex-wrap server-actions justify-content-between gap-2">
+                            <div>
+                                <button class="btn btn-success btn-sm btn-start-server" 
+                                        data-server="{{ server.name }}"
+                                        {% if statuses[server.name] == "running" %}disabled{% endif %}>
+                                    <i class="bi bi-play-fill"></i> Start
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-stop-server" 
+                                        data-server="{{ server.name }}"
+                                        {% if statuses[server.name] == "stopped" %}disabled{% endif %}>
+                                    <i class="bi bi-stop-fill"></i> Stop
+                                </button>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false">
+                                    <i class="bi bi-gear"></i> Manage
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="/server/logs/{{ server.name }}">
+                                            <i class="bi bi-file-text me-2"></i>View Logs
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/server/players/{{ server.name }}">
+                                            <i class="bi bi-people me-2"></i>Players
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/server/properties/{{ server.name }}">
+                                            <i class="bi bi-sliders me-2"></i>Settings
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/server/backups/{{ server.name }}">
+                                            <i class="bi bi-archive me-2"></i>Backups
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/server/edit/{{ server.name }}">
+                                            <i class="bi bi-pencil me-2"></i>Edit Server
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item text-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal{{ server.name }}">
+                                            <i class="bi bi-trash me-2"></i>Delete Server
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete confirmation modal -->
+            <div class="modal fade" id="deleteModal{{ server.name }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the server "{{ server.name }}"?</p>
+                            <p class="text-danger">This will only remove the server from the control panel, not delete the actual server files.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="/server/delete/{{ server.name }}" method="POST">
+                                <button type="submit" class="btn btn-danger">Delete Server</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle global API setting toggle
+    const globalUseApiCheckbox = document.getElementById('global_use_api');
+    if (globalUseApiCheckbox) {
+        globalUseApiCheckbox.addEventListener('change', function() {
+            const useApi = this.checked;
+            
+            // Update server manager setting via API
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ use_api: useApi }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`API ${useApi ? 'enabled' : 'disabled'} successfully`, 'success');
+                } else {
+                    showToast('Failed to update API setting', 'danger');
+                    // Reset checkbox to previous state
+                    this.checked = !useApi;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating API setting:', error);
+                showToast('Failed to update API setting', 'danger');
+                // Reset checkbox to previous state
+                this.checked = !useApi;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

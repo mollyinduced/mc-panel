@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-archive text-primary me-2"></i>
+            Backups: {{ server.name }}
+        </h1>
+        <p class="lead text-muted">Manage server backups</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ server.name }} Backups</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-archive-fill me-2"></i>
+                    Available Backups
+                </h5>
+                <button id="create-backup" class="btn btn-primary" data-server="{{ server.name }}">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create Backup
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Creating a backup will temporarily stop the server if it's running.
+                </div>
+                
+                {% if backups %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Backup Name</th>
+                                    <th>Date</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for backup in backups %}
+                                    <tr>
+                                        <td>{{ backup.name }}</td>
+                                        <td>{{ backup.date }}</td>
+                                        <td>{{ (backup.size / 1024 / 1024) | round(2) }} MB</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-warning btn-restore-backup"
+                                                   data-server="{{ server.name }}"
+                                                   data-backup="{{ backup.name }}">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                                Restore
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-archive fs-1 text-muted"></i>
+                        <p class="mt-3 text-muted">No backups available</p>
+                        <p class="text-muted">Click the "Create Backup" button to make your first backup</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Backup Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>What gets backed up?</h6>
+                        <ul>
+                            <li>World data</li>
+                            <li>Configuration files</li>
+                            <li>Player data</li>
+                            <li>Server properties</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Backup Tips</h6>
+                        <ul>
+                            <li>Create regular backups</li>
+                            <li>Before making major changes</li>
+                            <li>Before updating server</li>
+                            <li>After significant world changes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> Back to Dashboard
+            </a>
+            <div>
+                <button class="btn btn-success btn-start-server" data-server="{{ server.name }}">
+                    <i class="bi bi-play-fill"></i> Start Server
+                </button>
+                <button class="btn btn-danger btn-stop-server" data-server="{{ server.name }}">
+                    <i class="bi bi-stop-fill"></i> Stop Server
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

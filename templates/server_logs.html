@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5 mb-3">
+            <i class="bi bi-file-text text-primary me-2"></i>
+            Server Logs: {{ server.name }}
+        </h1>
+        <p class="lead text-muted">View server logs and execute commands</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ server.name }} Logs</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-terminal me-2"></i>
+                    Console
+                </h5>
+                <div>
+                    <span class="badge server-status" data-server="{{ server.name }}">
+                        <span class="bg-secondary">Checking...</span>
+                    </span>
+                    <button id="refresh-logs" class="btn btn-sm btn-outline-secondary ms-2" data-server="{{ server.name }}">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="server-logs" class="mb-3" data-server="{{ server.name }}">
+                    {% if logs %}
+                        {% for log in logs %}
+                            <div class="log-line {% if 'ERROR' in log or 'SEVERE' in log %}text-danger{% elif 'WARN' in log %}text-warning{% elif 'INFO' in log %}text-info{% endif %}">
+                                {{ log }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">No logs available</div>
+                    {% endif %}
+                </div>
+                
+                <div class="command-input-container">
+                    <form id="command-form" class="d-flex w-100" data-server="{{ server.name }}">
+                        <input type="text" id="command-input" class="form-control" placeholder="Type a command...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> Back to Dashboard
+                    </a>
+                    <div>
+                        <button class="btn btn-success btn-start-server" data-server="{{ server.name }}">
+                            <i class="bi bi-play-fill"></i> Start
+                        </button>
+                        <button class="btn btn-danger btn-stop-server" data-server="{{ server.name }}">
+                            <i class="bi bi-stop-fill"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Commands Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>
+                    Quick Commands
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="list-group mb-3">
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="list">
+                                List online players
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="help">
+                                Show help
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="say Hello everyone!">
+                                Say hello to players
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="list-group">
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="time set day">
+                                Set time to day
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="weather clear">
+                                Clear weather
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action quick-command" data-command="difficulty peaceful">
+                                Set difficulty to peaceful
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up quick commands
+    document.querySelectorAll('.quick-command').forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.getAttribute('data-command');
+            const commandInput = document.getElementById('command-input');
+            commandInput.value = command;
+            
+            // Focus on the input
+            commandInput.focus();
+        });
+    });
+});
+</script>
+{% endblock %}
